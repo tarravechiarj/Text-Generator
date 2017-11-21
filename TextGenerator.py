@@ -41,10 +41,11 @@ class TextGenerator:
         else:
             alone = self._loadJSON(filename)
             if alone is None:
-                self._updateDictionaries(filename)
+                if self._updateDictionaries(filename):
+                    self._saveJSON(setFilename)                   
             else:
                 self._combineDictionaries(alone[0], alone[1])
-            self._saveJSON(setFilename)
+                self._saveJSON(setFilename)
 
 
     def _updateDictionaries(self, filename):
@@ -62,10 +63,12 @@ class TextGenerator:
                     currDict[n] = currDict[n] + 1 if n in currDict else 1
                     self.followCounts.setdefault(curr, 0)
                     self.followCounts[curr] += 1
-                    curr = n        
+                    curr = n
+            return True
         
         except IOError as e:
             print("Error({0}): {1}".format(e.errno, e.strerror))
+            return False
 
 
     def _combineDictionaries(self, wordsMap, countMap):
@@ -115,7 +118,7 @@ class TextGenerator:
             yield suffix
  
 
-    def printText(self, prefix=None, sentenceLength=15, lineLength=80):
+    def printText(self, prefix=None, sentenceLength=20, lineLength=80):
         text = []
         
         charsInLine = 0
@@ -129,7 +132,12 @@ class TextGenerator:
                 charsInLine += wlen
             # Take account of spaces to be added between words
             charsInLine += 1
-        
+
+        # Capitalize the first letter of the first string without changing the
+        # case of the rest of the string
+        if (len(text) > 0 and text[0] is not None and len(text[0]) > 0):
+            text[0] = text[0][0].upper() + text[0][1:]
+
         print(" ".join(text))
 
 
